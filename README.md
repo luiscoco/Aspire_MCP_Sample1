@@ -1,6 +1,16 @@
-# Aspire.MCP.Sample
+# Aspire MCP (Model Context Protocol) Sample
 
 Sample MCP Server and MCP client using Aspire.
+
+## Prerrequisite
+
+Create Azure OpenAI resource and create a gpt-4o deployment
+
+![image](https://github.com/user-attachments/assets/aec5919a-074c-409d-b6af-ac42df610661)
+
+![image](https://github.com/user-attachments/assets/f6c22a17-6280-4122-8488-524797622514)
+
+It is also possible to configure four using other AI providers like: OpenAI, Github AI models, Ollama, etc.
 
 ## Overview
 
