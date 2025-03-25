@@ -67,7 +67,14 @@ Once we created the Azure OpenAI resource with the gpt-4o deployment you have to
 It is also possible to configure four using other AI providers like: OpenAI, Github AI models, Ollama, etc.
 
 
+### 13.1. Configure LLM with Azure OpenAI (gpt-4o)
 
+
+### 13.2. Configure LLM with OpenAI (gpt-4o)
+
+
+
+### 13.3. Configure LLM with Ollama ()
 
  
 ## 14. Run and Verify the Solution
