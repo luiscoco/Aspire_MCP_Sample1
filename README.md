@@ -1,8 +1,8 @@
-# Aspire MCP (Model Context Protocol) Sample
+# Aspire MCP (Model Context Protocol) Sample with .NET 10 and Visual Studio 2022 v17.4 (Preview Edition)
 
 Sample MCP Server and MCP client using Aspire.
 
-## Prerrequisite
+## 1. Prerrequisite
 
 Create Azure OpenAI resource and create a gpt-4o deployment
 
@@ -15,6 +15,40 @@ Once we created the Azure OpenAI resource with the gpt-4o deployment you have to
 ![image](https://github.com/user-attachments/assets/7b6bd667-ba34-4144-b0dc-6c20aeca5e88)
 
 It is also possible to configure four using other AI providers like: OpenAI, Github AI models, Ollama, etc.
+
+## 2. How to create a Blank solution
+
+## 3. How to create the folders struture
+
+## 4. How to create an Aspire Blank Application
+
+
+We upgrade the Nuget packages
+
+## 5. How to create a Blazor Web Application
+
+We Add Aspire support to the application
+
+## 6. How to create a ASP.NET Core Web API
+
+We Add Aspire support to the application
+
+## 7. Load Nuget Packages in Blazor Web Application
+
+
+## 8. Load Nuget Packages in ASP.NET Core Web API
+
+
+
+## 9. We configure AppHost project  Middleware(Program.cs)  
+
+
+## 10. 
+
+
+
+
+
 
 ## Overview
 
