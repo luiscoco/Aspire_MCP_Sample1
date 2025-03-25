@@ -31,25 +31,47 @@ It is also possible to configure four using other AI providers like: OpenAI, Git
 
 We upgrade the Nuget packages
 
-## 5. How to create a Blazor Web Application
+## 5. How to create a Blazor Web Application (MCP Client)
 
 We Add Aspire support to the application
 
-## 6. How to create a ASP.NET Core Web API
+## 6. How to create a ASP.NET Core Web API (MCP Server)
 
 We Add Aspire support to the application
 
-## 7. Load Nuget Packages in Blazor Web Application
+## 7. Load Nuget Packages in Blazor Web Application (MCP Client)
 
 
-## 8. Load Nuget Packages in ASP.NET Core Web API
+
+
+## 8. Load Nuget Packages in ASP.NET Core Web API (MCP Server)
 
 
 
 ## 9. We configure AppHost project  Middleware(Program.cs)  
 
 
-## 10. How to deploy the Solution in Azure
+## 10. Run and Verify the Blazor Web Application
+
+
+## 11. Run and Verify the ASP.NET Core Web API 
+
+How to configure OpenAPI documentation and Swagger
+
+
+## 12. Blazor Web Application (MCP Client) source code
+
+
+
+## 13. ASP.NET Core Web API (MCP Server) source code
+
+
+ 
+## 14. Run and Verify the Solution
+
+
+
+## 15. How to deploy the Solution in Azure
 
 
 
