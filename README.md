@@ -4,7 +4,13 @@ Sample MCP Server and MCP client using Aspire.
 
 ## 1. Prerrequisite
 
-Create Azure OpenAI resource and create a gpt-4o deployment
+### 1.1. Install .NET 10 and Visual Studio 2022 v17.4(Preview Edition)
+
+
+### 1.2. Install and Run Docker Desktop 
+
+
+### 1.3. Create Azure OpenAI resource and create a gpt-4o deployment
 
 ![image](https://github.com/user-attachments/assets/aec5919a-074c-409d-b6af-ac42df610661)
 
