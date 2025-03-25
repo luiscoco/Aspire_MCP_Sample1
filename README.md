@@ -10,6 +10,10 @@ Create Azure OpenAI resource and create a gpt-4o deployment
 
 ![image](https://github.com/user-attachments/assets/f6c22a17-6280-4122-8488-524797622514)
 
+Once we created the Azure OpenAI resource with the gpt-4o deployment you have to copy this values (endpoint,key,deployment name) in the appsettings.json file
+
+![image](https://github.com/user-attachments/assets/7b6bd667-ba34-4144-b0dc-6c20aeca5e88)
+
 It is also possible to configure four using other AI providers like: OpenAI, Github AI models, Ollama, etc.
 
 ## Overview
