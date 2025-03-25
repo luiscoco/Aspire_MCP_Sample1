@@ -43,7 +43,7 @@ We Add Aspire support to the application
 ## 9. We configure AppHost project  Middleware(Program.cs)  
 
 
-## 10. 
+## 10. How to deploy the Solution in Azure
 
 
 
