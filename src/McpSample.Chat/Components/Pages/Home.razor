@@ -1,0 +1,251 @@
+﻿@page "/"
+@using Azure
+@using Azure.AI.OpenAI
+@using Azure.Identity
+@using McpSample.BlazorChat.Services
+@using Microsoft.Extensions.AI
+@using Microsoft.Extensions.Configuration
+@using System.Text.RegularExpressions
+@using ModelContextProtocol.Client
+@using System.Text
+@using OpenAI
+
+@inject IMcpClient McpClient
+@attribute [StreamRendering(true)]
+@rendermode InteractiveServer
+
+<PageTitle>Chat - MCP</PageTitle>
+
+<link href="css/Home.css" rel="stylesheet" />
+
+<div class="chat-container">
+    <div class="chat-bubble assistant">
+        <div class="chat-title">MCP Server using <b>@deploymentName</b></div>
+        <div class="chat-content">
+            <p>Hi, I'm a client to test MCP using <b>@deploymentName</b>, let's chat!</p>
+            <p>Check the Settings page to test the model using GitHub Models, Ollama or Azure AI Foundry or to use custom settings.</p>
+        </div>
+        <div class="chat-title">Current MCP Tools in the Server:</div>
+        <div class="chat-content">
+            @if (tools is not null)
+                foreach (var tool in tools)
+                {
+                    <p>- <b>@tool.Name</b>: @tool.Description</p>
+                }
+        </div>
+
+
+    </div>
+    @foreach (var message in ChatMessages)
+    {
+        string chatBubbleClass = string.Empty;
+        string messageContent = string.Empty;
+        string messageThink = string.Empty;
+        string messageTitle = string.Empty;
+        string functionResponse = string.Empty;
+        var functionCallId = string.Empty;
+
+        messageContent = message?.Text ?? string.Empty;
+
+        if (message.Role == ChatRole.User)
+        {
+            messageTitle = "User";
+            chatBubbleClass = "chat-bubble user";
+        }
+        if (message.Role == ChatRole.Assistant)
+        {
+            messageTitle = "Assistant";
+            chatBubbleClass = "chat-bubble assistant";
+
+            // in case of using a reasoning model
+            var match = Regex.Match(messageContent, @"<think>(.*?)<\/think>(.*)", RegexOptions.Singleline);
+            if (match.Success)
+            {
+                messageThink = match.Groups[1].Value.Trim();
+                messageContent = match.Groups[2].Value.Trim();
+            }
+        }
+        if (message.Role == ChatRole.System)
+        {
+            messageContent = string.Empty;
+        }
+
+        if (message.Role == ChatRole.Tool)
+        {
+            messageTitle = "Tool";
+            messageContent = string.Empty;
+            chatBubbleClass = "chat-bubble tool";
+            if (message.Contents.FirstOrDefault() is FunctionResultContent functionResult)
+            {
+                functionResponse = functionResult.Result.ToString();
+                functionCallId = $"Call Id: {functionResult.CallId}";
+            }
+        }
+
+        if (!string.IsNullOrEmpty(messageContent) || messageTitle == "Tool")
+        {
+            <div class="@chatBubbleClass">
+                @if (string.IsNullOrEmpty(functionResponse))
+                {
+                    <div class="chat-title">@messageTitle</div>
+                    <div class="chat-content">
+                        @messageContent
+                        @if (!string.IsNullOrEmpty(messageThink))
+                        {
+                            <details>
+                                <summary class="think-summary">Show Think Process</summary>
+                                <div class="think-content">@messageThink</div>
+                            </details>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <details>
+                        <summary class="think-summary">Tool Result</summary>
+                        <div class="think-content">@functionResponse</div>
+                        <div class="think-content">@functionCallId</div>
+                    </details>
+                }
+            </div>
+        }
+    }
+</div>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="loading-ring"></div>
+    </div>
+}
+
+<div class="chat-input-container">
+    <input type="text" @bind="userQuestion" placeholder="Ask a question..." class="chat-input" />
+    <button @onclick="AskQuestion" type="submit" class="chat-button">Chat</button>
+</div>
+
+@if (!string.IsNullOrEmpty(errorDetails))
+{
+    <div class="error-container">
+        <div class="error-title">Error:</div>
+        <div class="error-content">@errorDetails</div>
+    </div>
+}
+
+@code {
+    private bool isLoading = false;
+    private string? chatResponse;
+    private string userQuestion = string.Empty;
+    private string errorDetails = string.Empty;
+    private Microsoft.Extensions.AI.IChatClient? client;
+    private string apiKey = string.Empty;
+    private string endpoint = string.Empty;
+    private string deploymentName = "llama3.2";
+    private IList<AIFunction> tools = null!;
+    [Inject] private IConfiguration Configuration { get; set; } = default!;
+    [Inject] private ILogger<Program> Logger { get; set; } = default!;
+    private IList<Microsoft.Extensions.AI.ChatMessage> ChatMessages = new List<Microsoft.Extensions.AI.ChatMessage>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CreateChat();
+
+        // get mcp server tools
+        tools = await McpClient.GetAIFunctionsAsync();
+
+        // system message
+        ChatMessages.Add(new ChatMessage(ChatRole.System, "You are a helpful assistant. You always replies using text and emojis. You never generate HTML or Markdown. You only do what the user ask you to do. If you don't have a function to answer a question, you just answer the question"));
+    }
+
+    private async Task AskQuestion(MouseEventArgs e)
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            if (client == null)
+            {
+                Logger.LogInformation("Chat component is not initialized.");
+                return;
+            }
+
+            Logger.LogInformation($"Add user question: {userQuestion}");
+            ChatMessages.Add(new ChatMessage(ChatRole.User, userQuestion));
+
+            // Clear the userQuestion textbox
+            userQuestion = string.Empty;
+
+            var response = await client.GetResponseAsync(ChatMessages, new() { Tools = [.. tools] });
+            Logger.LogInformation($"Model Response: {response}");
+            ChatMessages.AddMessages(response);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while processing the chat request.");
+            errorDetails = ex.ToString();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateChat()
+    {
+        try
+        {
+            Logger.LogInformation("Initializing Chat component");
+
+            // ✅ Corrected values
+            var endpointUri = new Uri(Configuration["AzureOpenAI:Endpoint"]);
+            var credentials = new AzureKeyCredential(Configuration["AzureOpenAI:ApiKey"]);
+            var deploymentName = Configuration["AzureOpenAI:Deployment"]; // Ensure this matches your Azure OpenAI deployment name
+
+            Logger.LogInformation($"===================================================");
+            Logger.LogInformation($"Chat info - Endpoint: {endpoint} - DeploymentName: {deploymentName} - ApiKey length: {apiKey.Length}");
+
+            // Detecting Ollama if localhost is used
+            if (endpoint.Contains("localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.LogInformation("Using localhost endpoint - Ollama");
+                client = new OllamaChatClient(
+                    endpoint: new Uri(endpoint),
+                    modelId: deploymentName)
+                    .AsBuilder()
+                    .UseFunctionInvocation()
+                    .Build();
+            }
+            else
+            {
+                Logger.LogInformation("Using Azure OpenAI with ApiKey");
+
+                // client = new Azure.AI.Inference.ChatCompletionsClient(
+                //     endpoint: new Uri(endpoint),
+                //     credential: new AzureKeyCredential(apiKey))
+                //     .AsChatClient(deploymentName) // ✅ This is where deployment name is used
+                //     .AsBuilder()
+                //     .UseFunctionInvocation()
+                //     .Build();
+
+                var azureClient = new AzureOpenAIClient(endpointUri, credentials);
+
+                client = azureClient
+                    .AsChatClient(deploymentName)
+                    .AsBuilder()
+                    .UseFunctionInvocation()
+                    .Build();
+            }
+
+            Logger.LogInformation($"===================================================");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while initializing the chat component.");
+            errorDetails = ex.ToString();
+        }
+    }
+
+}
